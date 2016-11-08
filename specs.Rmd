@@ -165,6 +165,17 @@ plot_dps_gain("xavius", "Heroic")
 
 ```
 
+Finally, here's a really blunt linear regression of each encounter, with the scaling factor (slope of the regression line) plotted:
+
+```{r, fig.width=16}
+d <- data
+m <- d %>% group_by(spec, encounter) %>% do(tidy(lm(dps ~ ilvl, data=.)))
+slopes <- m[m$term == "ilvl",]
+ggplot(data=slopes, aes(x=encounter, y=estimate, group=interaction(spec, encounter), colour=spec, fill=spec)) + geom_bar(position="dodge", stat="identity") +
+  labs(y="DPS gain/ilvl", x="Encounter", title="DPS scaling per ilvl: Overall")
+
+```
+
 ## Conclusions
 
 Overall, I would consider the hypothesis generally confirmed. Assassination clearly holds superior single-target potential to either Sub or Outlaw at the current level of raiding, barring the freak Outlaw parses with multiple 6-buff RtB rolls. Outlaw consistently scales less impressively than either Assassination or Subtlety as ilvl progresses.
