@@ -62,8 +62,6 @@ get_encounter_data <- function(encounter_name, difficulty_name, dataset, cutoff=
 Plotting the data is straightforward. Here we plot both boxplots for each spec/ilvl bucket, as well as a smoothed moving average and a linear trendline.
 
 ```{r}
-library(grid)
-library(gridExtra)
 plot_encounter <- function(encounter_name, difficulty_name, dataset=data, bucket_size=2, cutoff=c(0.05, 0.95)) {
   encounter_data <- get_encounter_data(encounter_name, difficulty_name, dataset=dataset, bucket_size=bucket_size, cutoff=cutoff)
 
