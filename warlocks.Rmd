@@ -65,16 +65,16 @@ plot_encounter <- function(encounter_name, difficulty_name, dataset=data, bucket
 
   long_data <- melt(encounter_data, id.vars=c("spec", "ilvl"), measure.vars=c("dps"))
 
-  p <- ggplot(data=long_data, aes(x=ilvl, group=spec, colour=spec, fill=spec)) + geom_bar(position="dodge") +
-    labs(y="Parses", x="iLevel", title=paste("Parses:", encounter_name, difficulty_name))
-  print(p)
-  cat('\r\n\r\n')
-  
   p <- ggplot(data=long_data, aes(x=ilvl, y=value, group=spec, colour=spec)) +
     geom_boxplot(aes(group=interaction(spec, floor(ilvl/bucket_size) * bucket_size))) +
     geom_smooth() + # loess fit
     geom_smooth(linetype = "dashed", method = "lm", se = FALSE) + # linear fit
     labs(y="DPS", x="iLevel", title=paste("Performance:", encounter_name, difficulty_name))
+  print(p)
+  cat('\r\n\r\n')
+  
+  p <- ggplot(data=long_data, aes(x=ilvl, group=spec, colour=spec, fill=spec)) + geom_bar(position="dodge") +
+    labs(y="Parses", x="iLevel", title=paste("Parses:", encounter_name, difficulty_name))
   print(p)
   cat('\r\n\r\n')
 }
