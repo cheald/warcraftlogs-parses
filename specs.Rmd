@@ -171,7 +171,8 @@ Finally, here's a really blunt linear regression of each encounter, with the sca
 d <- data
 m <- d %>% group_by(spec, encounter) %>% do(tidy(lm(dps ~ ilvl, data=.)))
 slopes <- m[m$term == "ilvl",]
-ggplot(data=slopes, aes(x=encounter, y=estimate, group=interaction(spec, encounter), colour=spec, fill=spec)) + geom_bar(position="dodge", stat="identity") +
+slopes$spec <- factor(slopes$spec, levels = slopes$spec[order(slopes$estimate)])
+ggplot(data=slopes, aes(x=encounter, y=estimate, group=interaction(spec, encounter), reorder=estimate, fill=spec)) + geom_bar(position="dodge", stat="identity") +
   labs(y="DPS gain/ilvl", x="Encounter", title="DPS scaling per ilvl: Overall")
 
 ```
