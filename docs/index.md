@@ -16,6 +16,7 @@ You'll find the code to grab and distill the data, as well as the RStudio notebo
 ## The parses
 
 * [Death Knight](death_knight.html)
+* [Druid](druid.html)
 * [Hunter](hunter.html)
 * [Mage](mage.html)
 * [Rogue](rogue.html)
