@@ -21,16 +21,18 @@ cutoff_date = "2016-10-15"
 
 Then we define a function that can be used to filter the dataset to a particular encounter and difficulty. It also performs outlier filtering - for each 5-ilvl bucket, for each spec, we compute the 95th percentile of DPS, then remove any parses from the dataset for that ilvl/spec above that cutoff.
 
-```{r, fig.width=12, fig.height=6}
+```{r}
+d <- data
+m <- d %>% group_by(class, spec, encounter) %>% do(tidy(lm(dps ~ ilvl, data=.)))
 
-  d <- data # filter_outliers(data, cutoff=c(0.05, 0.95), bucket_size=1)
-  m <- d %>% group_by(class, spec, encounter) %>% do(tidy(lm(dps ~ ilvl, data=.)))
+slopes <- m[m$term == "ilvl",]
 
-  slopes <- m[m$term == "ilvl",]
+d <- data
+m <- d %>% group_by(class, spec) %>% do(tidy(lm(dps ~ ilvl, data=.)))
+all_slopes <- m[m$term == "ilvl",]
 ```
 
-```{r, fig.width=12, fig.height=6}
-specs = palette()
+```{r, fig.width=8, fig.height=7}
 scale_encounter <- function(s, title) {
   s$class = with(s, factor(class, levels = rev(levels(class))))
   s$spec = with(s, factor(spec, levels = rev(levels(spec))))
@@ -47,9 +49,5 @@ scale_encounter(slopes[slopes$encounter == "Elerethe_Renferal",], title="Elereth
 scale_encounter(slopes[slopes$encounter == "Il_gynoth__Heart_of_Corruption",], title="Il_gynoth__Heart_of_Corruption")
 scale_encounter(slopes[slopes$encounter == "Cenarius",], title="Cenarius")
 scale_encounter(slopes[slopes$encounter == "Xavius",], title="Xavius")
-d <- data
-m <- d %>% group_by(class, spec) %>% do(tidy(lm(dps ~ ilvl, data=.)))
-all_slopes <- m[m$term == "ilvl",]
-
 scale_encounter(all_slopes, title="Overall")
 ```
