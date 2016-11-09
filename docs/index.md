@@ -13,6 +13,12 @@ We also plot the number of parses per ilvl per spec for the encounter, and provi
 
 You'll find the code to grab and distill the data, as well as the RStudio notebooks used to generate this output at [https://github.com/cheald/warcraftlogs-parses](https://github.com/cheald/warcraftlogs-parses).
 
+## tl;dr
+
+* [Overall scaling, and per encounter](overall.html)
+
+![Overall Scaling](download.png)
+
 ## The parses
 
 * [Death Knight](death_knight.html)

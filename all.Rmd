@@ -1,0 +1,55 @@
+---
+title: "All spec scaling"
+output:
+  html_notebook: 
+    fig_height: 6
+    fig_width: 18
+  pdf_document: default
+---
+
+```{r}
+library(reshape2)
+library(ggplot2)
+library(dplyr)
+library(broom)
+data <- read.csv("csv/all.csv")
+data$date <- as.Date(data$date)
+cutoff_date = "2016-10-15"
+```
+
+## Filtering and plotting
+
+Then we define a function that can be used to filter the dataset to a particular encounter and difficulty. It also performs outlier filtering - for each 5-ilvl bucket, for each spec, we compute the 95th percentile of DPS, then remove any parses from the dataset for that ilvl/spec above that cutoff.
+
+```{r, fig.width=12, fig.height=6}
+
+  d <- data # filter_outliers(data, cutoff=c(0.05, 0.95), bucket_size=1)
+  m <- d %>% group_by(class, spec, encounter) %>% do(tidy(lm(dps ~ ilvl, data=.)))
+
+  slopes <- m[m$term == "ilvl",]
+```
+
+```{r, fig.width=12, fig.height=6}
+specs = palette()
+scale_encounter <- function(s, title) {
+  s$class = with(s, factor(class, levels = rev(levels(class))))
+  s$spec = with(s, factor(spec, levels = rev(levels(spec))))
+  ggplot(data=s, aes(x=paste(class, spec), y=estimate, group=interaction(class, spec), reorder=estimate, fill=paste(class, spec))) +
+    geom_bar(position=position_dodge(width = 0.9), stat="identity", colour="black") +
+    labs(y="DPS gain/ilvl", x="Encounter", title=paste("DPS scaling per ilvl:", title)) +
+    coord_flip() +
+    guides(fill=FALSE)
+}
+scale_encounter(slopes[slopes$encounter == "Nythendra",], title="Nythendra")
+scale_encounter(slopes[slopes$encounter == "Ursoc",], title="Ursoc")
+scale_encounter(slopes[slopes$encounter == "Dragons_of_Nightmare",], title="Dragons_of_Nightmare")
+scale_encounter(slopes[slopes$encounter == "Elerethe_Renferal",], title="Elerethe_Renferal")
+scale_encounter(slopes[slopes$encounter == "Il_gynoth__Heart_of_Corruption",], title="Il_gynoth__Heart_of_Corruption")
+scale_encounter(slopes[slopes$encounter == "Cenarius",], title="Cenarius")
+scale_encounter(slopes[slopes$encounter == "Xavius",], title="Xavius")
+d <- data
+m <- d %>% group_by(class, spec) %>% do(tidy(lm(dps ~ ilvl, data=.)))
+all_slopes <- m[m$term == "ilvl",]
+
+scale_encounter(all_slopes, title="Overall")
+```
