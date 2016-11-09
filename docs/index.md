@@ -1,6 +1,6 @@
 ---
 title: Parsing WarcraftLogs for fun and profit. Well, not profit.
-layout: minimal
+layout: post
 ---
 
 I initially started this with parses for rogues, but the framework is extensible enough that it's easily applied to other classes. Here are the parses I've done so far.
