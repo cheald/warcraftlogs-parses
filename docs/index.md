@@ -19,7 +19,13 @@ You'll find the code to grab and distill the data, as well as the RStudio notebo
 
 ![Overall Scaling](download.png)
 
+This shows the rate of change in DPS per ilvl gained, across the entire data set. This is *not* damage potential, but rather the rate of change of damage improvement as your gear improves.
+
+While I initially started this project to find out if Outlaw scaled significantly worse than the other rogue specs, I found that not only is Outlaw the worst-scaling rogue spec, it's the worst-scaling raid spec overall, and by quite a large amount! Beast Mastery Hunters, Survival Hunters, and Unholy Death Knights suffer lower-than-average scaling, as well. On the other end of the scale, Shadow Priests, Assassination Rogues, and Retribution Paladins appear to have the strongest scaling, which aligns with common beliefs, as well.
+
 ## The parses
+
+Below you'll find the parses for individual classes. While some classes (such as paladins and priests) don't have more than one damage spec, they are included for completeness.
 
 * [Death Knight](death_knight.html)
 * [Demon Hunter](demon_hunter.html)
