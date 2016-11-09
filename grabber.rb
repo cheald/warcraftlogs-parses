@@ -10,7 +10,7 @@ DIFFICULTIES = [[3, "Normal"], [4, "Heroic"], [5, "Mythic"]]
 KLASS = get_class(desired_class)
 BRACKETS = (6..16)
 DIFFICULTY_NAMES = %w(Normal Heroic Mythic)
-SKIP_SPECS = %w(Restoration Combat Holy Protection Guardian Vengence Blood Discipline Brewmaster Mistweaver)
+SKIP_SPECS = %w(Restoration Combat Holy Protection Guardian Vengeance Blood Discipline Brewmaster Mistweaver)
 
 raise "Could not find specs for class: #{desired_class}" if KLASS.nil?
 class_id = KLASS["id"]
