@@ -1,0 +1,174 @@
+---
+title: "Priest spec scaling"
+output:
+  html_notebook: 
+    fig_height: 6
+    fig_width: 18
+  pdf_document: default
+---
+
+## Fetching the data
+
+Data is grabbed from WarcraftLogs via their API. We get the top 1k parses per spec/encounter/difficulty.
+
+Source is at https://github.com/cheald/warcraftlogs-parses
+
+```
+$ API_KEY=your_key_here ruby grabber.rb priest
+```
+
+Once we have the JSON files, we use a small script to boil them down into a CSV:
+
+```
+$ API_KEY=your_key_here ruby distill.rb priest
+```
+
+This results in the `csv/priest.csv` that we then consume in R.
+
+Once in R, we load it up:
+
+```{r}
+library(reshape2)
+library(ggplot2)
+library(dplyr)
+library(broom)
+data <- read.csv("csv/priest.csv")
+data$date <- as.Date(data$date)
+cutoff_date = "2016-10-15"
+```
+
+## Filtering and plotting
+
+Then we define a function that can be used to filter the dataset to a particular encounter and difficulty. It also performs outlier filtering - for each 5-ilvl bucket, for each spec, we compute the 95th percentile of DPS, then remove any parses from the dataset for that ilvl/spec above that cutoff.
+
+```{r}
+
+get_encounter_data <- function(encounter_name, difficulty_name, dataset, cutoff=c(0.05, 0.95), bucket_size=1, min_ilvl=855, max_ilvl=875) {
+  specs <- unique(dataset$spec)
+  d <- filter(dataset, ilvl >= min_ilvl, ilvl <= max_ilvl, encounter == encounter_name, difficulty == difficulty_name, date >= cutoff_date)
+  for(bucket in seq(800, 900, by=bucket_size)) {
+    for(f_spec in specs) {
+      q <- quantile(d[d$spec == f_spec & d$ilvl >= bucket & d$ilvl < bucket + bucket_size,]$dps, cutoff)
+      if(!is.na(q[1])) {
+        d <- filter(d, !(spec == f_spec & ilvl >= bucket & ilvl < bucket + bucket_size & (dps > q[2] | dps < q[1])))
+      }
+    }
+  }
+  return(d)
+}
+```
+
+Plotting the data is straightforward. Here we plot both boxplots for each spec/ilvl bucket, as well as a smoothed moving average and a linear trendline.
+
+```{r}
+plot_encounter <- function(encounter_name, difficulty_name, dataset=data, bucket_size=2, cutoff=c(0.05, 0.95)) {
+  encounter_data <- get_encounter_data(encounter_name, difficulty_name, dataset=dataset, bucket_size=bucket_size, cutoff=cutoff)
+
+  long_data <- melt(encounter_data, id.vars=c("spec", "ilvl"), measure.vars=c("dps"))
+
+  p <- ggplot(data=long_data, aes(x=ilvl, y=value, group=spec, colour=spec)) +
+    geom_boxplot(aes(group=interaction(spec, floor(ilvl/bucket_size) * bucket_size))) +
+    geom_smooth() + # loess fit
+    geom_smooth(linetype = "dashed", method = "lm", se = FALSE) + # linear fit
+    labs(y="DPS", x="iLevel", title=paste("Performance:", encounter_name, difficulty_name))
+  print(p)
+  cat('\r\n\r\n')
+  
+  p <- ggplot(data=long_data, aes(x=ilvl, group=spec, colour=spec, fill=spec)) + geom_bar(position="dodge") +
+    labs(y="Parses", x="iLevel", title=paste("Parses:", encounter_name, difficulty_name))
+  print(p)
+  cat('\r\n\r\n')
+}
+```
+
+## Results
+
+
+```{r, fig.width=12, fig.height=6}
+
+plot_encounter("Nythendra", "Normal")
+plot_encounter("Nythendra", "Heroic")
+plot_encounter("Nythendra", "Mythic")
+
+plot_encounter("Ursoc", "Normal")
+plot_encounter("Ursoc", "Heroic")
+plot_encounter("Ursoc", "Mythic")
+
+plot_encounter("Elerethe_Renferal", "Normal")
+plot_encounter("Elerethe_Renferal", "Heroic")
+plot_encounter("Elerethe_Renferal", "Mythic")
+
+plot_encounter("Il_gynoth__Heart_of_Corruption", "Normal")
+plot_encounter("Il_gynoth__Heart_of_Corruption", "Heroic")
+plot_encounter("Il_gynoth__Heart_of_Corruption", "Mythic")
+
+plot_encounter("Dragons_of_Nightmare", "Normal")
+plot_encounter("Dragons_of_Nightmare", "Heroic")
+plot_encounter("Dragons_of_Nightmare", "Mythic")
+
+plot_encounter("Cenarius", "Normal")
+plot_encounter("Cenarius", "Heroic")
+plot_encounter("Cenarius", "Mythic")
+
+plot_encounter("Xavius", "Normal")
+plot_encounter("Xavius", "Heroic")
+plot_encounter("Xavius", "Mythic")
+```
+
+### Scaling
+
+So we have the raw (smoothed) damage progressions, but how about scaling? 
+
+```{r, fig.width=12, fig.height=6}
+plot_dps_gain <- function(encounter, difficulty, dataset=data, bucket_size=1, cutoff=c(0.05, 0.95)) {
+  d <- dataset[dataset$encounter == encounter & dataset$difficulty == difficulty & dataset$ilvl <= 870 & dataset$date >= cutoff_date, ]
+  d <- aggregate(d$dps, by=list(ilvl=d$ilvl, spec=d$spec), FUN=mean)
+  d$dps <- d$x
+  d <- d[order(d$ilvl),]
+  d$diff <- ave(d$dps, factor(d$spec), FUN=function(x) c(NA, diff(x)))
+  d <- filter(d, !is.na(diff))
+  ggplot(data=d, aes(x=ilvl, y=diff, group=interaction(spec, encounter), colour=spec)) + geom_smooth(se=FALSE, fullrange=TRUE) +
+    labs(y="DPS gain per tier", x="iLevel", title=paste(encounter, difficulty, sep = " ")) + coord_cartesian(ylim = c(0, 15000))
+}
+
+# Commented fights have too little data to produce anything useful
+
+plot_dps_gain("Nythendra", "Normal")
+plot_dps_gain("Nythendra", "Heroic")
+plot_dps_gain("Nythendra", "Mythic")
+
+plot_dps_gain("Ursoc", "Normal")
+plot_dps_gain("Ursoc", "Heroic")
+plot_dps_gain("Ursoc", "Mythic")
+
+plot_dps_gain("Elerethe_Renferal", "Normal")
+plot_dps_gain("Elerethe_Renferal", "Heroic")
+plot_dps_gain("Elerethe_Renferal", "Mythic")
+
+plot_dps_gain("Il_gynoth__Heart_of_Corruption", "Normal")
+plot_dps_gain("Il_gynoth__Heart_of_Corruption", "Heroic")
+# plot_dps_gain("il_gynoth__heart_of_corruption", "Mythic")
+
+plot_dps_gain("Dragons_of_Nightmare", "Normal")
+plot_dps_gain("Dragons_of_Nightmare", "Heroic")
+# plot_dps_gain("Dragons_of_Nightmare", "Mythic")
+
+plot_dps_gain("Cenarius", "Normal")
+plot_dps_gain("Cenarius", "Heroic")
+# plot_dps_gain("cenarius", "Mythic")
+
+plot_dps_gain("Xavius", "Normal")
+plot_dps_gain("Xavius", "Heroic")
+# plot_dps_gain("xavius", "Mythic")
+
+```
+
+Finally, here's a really blunt linear regression of each encounter, with the scaling factor (slope of the regression line) plotted:
+
+```{r, fig.width=16}
+d <- data
+m <- d %>% group_by(spec, encounter) %>% do(tidy(lm(dps ~ ilvl, data=.)))
+slopes <- m[m$term == "ilvl",]
+ggplot(data=slopes, aes(x=encounter, y=estimate, group=interaction(spec, encounter), reorder=estimate, fill=spec)) + geom_bar(position="dodge", stat="identity") +
+  labs(y="DPS gain/ilvl", x="Encounter", title="DPS scaling per ilvl: Overall")
+```

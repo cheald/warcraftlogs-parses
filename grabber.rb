@@ -10,17 +10,17 @@ DIFFICULTIES = [[3, "Normal"], [4, "Heroic"], [5, "Mythic"]]
 KLASS = get_class(desired_class)
 BRACKETS = (6..16)
 DIFFICULTY_NAMES = %w(Normal Heroic Mythic)
+SKIP_SPECS = %w(Restoration Combat Holy Protection Guardian Vengence Blood Discipline Brewmaster Mistweaver)
 
 raise "Could not find specs for class: #{desired_class}" if KLASS.nil?
 class_id = KLASS["id"]
 
 encounters = get_zones.detect {|z| z["id"] == 10 }["encounters"]
-bar = ProgressBar.new(encounters.length * KLASS["specs"].length * DIFFICULTIES.length * BRACKETS.to_a.length)
+bar = ProgressBar.new(encounters.length * (KLASS["specs"].map {|s| s["name"] } - SKIP_SPECS).length * DIFFICULTIES.length * BRACKETS.to_a.length)
 
 target_dir = File.join("data", slug)
 Dir.mkdir(target_dir) unless Dir.exists?(target_dir)
 
-SKIP_SPECS = %w(Restoration Combat Holy Protection Guardian Vengence Blood Discipline Brewmaster Mistweaver)
 encounters.each do |encounter|
   KLASS["specs"].each do |spec|
     next if SKIP_SPECS.include?(spec["name"])
