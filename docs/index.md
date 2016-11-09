@@ -15,6 +15,7 @@ You'll find the code to grab and distill the data, as well as the RStudio notebo
 
 ## The parses
 
+* [Hunter](hunter.html)
 * [Mage](mage.html)
 * [Rogue](rogue.html)
 * [Shaman](shaman.html)
