@@ -20,7 +20,7 @@ bar = ProgressBar.new(encounters.length * KLASS["specs"].length * DIFFICULTIES.l
 target_dir = File.join("data", slug)
 Dir.mkdir(target_dir) unless Dir.exists?(target_dir)
 
-SKIP_SPECS = %w(Restoration Combat Holy Protection Guardian Vengence Blood)
+SKIP_SPECS = %w(Restoration Combat Holy Protection Guardian Vengence Blood Discipline Brewmaster Mistweaver)
 encounters.each do |encounter|
   KLASS["specs"].each do |spec|
     next if SKIP_SPECS.include?(spec["name"])
