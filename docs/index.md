@@ -19,6 +19,7 @@ You'll find the code to grab and distill the data, as well as the RStudio notebo
 * [Druid](druid.html)
 * [Hunter](hunter.html)
 * [Mage](mage.html)
+* [Paladin](paladin.html)
 * [Priest](priest.html)
 * [Rogue](rogue.html)
 * [Shaman](shaman.html)
