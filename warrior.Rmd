@@ -172,5 +172,4 @@ slopes <- m[m$term == "ilvl",]
 slopes$spec <- factor(slopes$spec, levels = slopes$spec[order(slopes$estimate)])
 ggplot(data=slopes, aes(x=encounter, y=estimate, group=interaction(spec, encounter), reorder=estimate, fill=spec)) + geom_bar(position="dodge", stat="identity") +
   labs(y="DPS gain/ilvl", x="Encounter", title="DPS scaling per ilvl: Overall")
-
 ```
